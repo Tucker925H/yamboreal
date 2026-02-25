@@ -15,7 +15,7 @@ export default function AdminPage() {
       },
       body: JSON.stringify({
         title: "今すぐ撮影！",
-        body: "BeReal風通知です。",
+        body: "2分以内に撮影をしよう！",
         url: "/timeline",
       }),
     });
