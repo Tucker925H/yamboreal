@@ -22,7 +22,7 @@ export type Post = {
   created_at: string;
 };
 
-// 投稿とプロフィール情報を結合した型
+// 投稿とプロフィール・班情報を結合した型
 export type PostWithProfile = Post & {
-  profiles: Profile | null;
+  profiles: (Profile & { crews: Crew | null }) | null;
 };

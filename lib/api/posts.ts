@@ -60,7 +60,7 @@ export async function createPost(params: {
 }
 
 /**
- * 投稿一覧を取得（プロフィール情報付き）
+ * 投稿一覧を取得（プロフィール・班情報付き）
  */
 export async function fetchPosts(): Promise<{
   data: PostWithProfile[];
@@ -73,7 +73,11 @@ export async function fetchPosts(): Promise<{
       profiles (
         uuid,
         display_name,
-        crew_id
+        crew_id,
+        crews (
+          id,
+          name
+        )
       )
     `)
     .order("created_at", { ascending: false });

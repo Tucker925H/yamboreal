@@ -59,20 +59,9 @@ export function Providers({ children }: { children: ReactNode }) {
       if (session?.user) {
         setUser(session.user);
         await loadProfile(session.user.id);
-        setIsLoading(false);
-      } else {
-        // 未ログインなら匿名ログイン
-        const { data, error } = await supabase.auth.signInAnonymously();
-        if (error) {
-          console.error("Anonymous sign in error:", error);
-        } else {
-          setUser(data.user);
-          if (data.user) {
-            await loadProfile(data.user.id);
-          }
-        }
-        setIsLoading(false);
       }
+      // 未ログインの場合はそのまま（匿名認証は使わない）
+      setIsLoading(false);
     };
 
     getSession();

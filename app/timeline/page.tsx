@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../providers";
 
 export default function TimelinePage() {
-  const { user, profile, isLoading, isAnonymous } = useAuth();
+  const { user, profile, isLoading } = useAuth();
   const [posts, setPosts] = useState<PostWithProfile[]>([]);
   const [selectedPost, setSelectedPost] = useState<PostWithProfile | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -113,31 +113,31 @@ export default function TimelinePage() {
       {/* ログイン状態表示 */}
       <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
         {isLoading ? (
-          <p className="text-xs text-zinc-500">認証中...</p>
-        ) : user ? (
+          <p className="text-xs text-zinc-500">読み込み中...</p>
+        ) : user && profile ? (
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-green-500" />
-            {profile ? (
-              <>
-                <p className="text-xs font-medium text-foreground">
-                  {profile.display_name}
-                </p>
-                <p className="text-xs text-zinc-400 dark:text-zinc-500">
-                  {profile.crews?.name}
-                </p>
-              </>
-            ) : (
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                {isAnonymous ? "ゲスト" : "ログイン中"}
-              </p>
-            )}
+            <p className="text-xs font-medium text-foreground">
+              {profile.display_name}
+            </p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">
+              {profile.crews?.name}
+            </p>
           </div>
         ) : (
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-red-500" />
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
-              未ログイン
-            </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-zinc-400" />
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                ゲスト閲覧中
+              </p>
+            </div>
+            <Link
+              href="/login"
+              className="text-xs text-foreground underline"
+            >
+              ログイン
+            </Link>
           </div>
         )}
       </div>
@@ -218,12 +218,17 @@ export default function TimelinePage() {
 
             {/* ユーザー情報 */}
             <div className="flex items-center gap-3 px-4 py-3">
-              <div className="h-10 w-10 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-300 text-xs font-bold dark:bg-zinc-700">
+                {selectedPost.profiles?.crews?.name || "?"}
+              </div>
               <div>
                 <p className="text-sm font-medium text-foreground">
                   {selectedPost.profiles?.display_name || "ユーザー"}
                 </p>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {selectedPost.profiles?.crews?.name && (
+                    <span className="mr-2">{selectedPost.profiles.crews.name}</span>
+                  )}
                   {getRelativeTime(selectedPost.created_at)}
                 </p>
               </div>
