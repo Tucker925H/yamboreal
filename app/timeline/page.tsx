@@ -8,6 +8,45 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../providers";
 
 export default function TimelinePage() {
+    // Push通知受信時のタイムスタンプ
+    const [pushTimestamp, setPushTimestamp] = useState<number | null>(null);
+    const [countdown, setCountdown] = useState<number>(0);
+
+    // サービスワーカーからのpush-receivedメッセージを受信
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      const handler = (event: MessageEvent) => {
+        if (event.data?.type === "push-received" && event.data.timestamp) {
+          localStorage.setItem("pushTimestamp", String(event.data.timestamp));
+          setPushTimestamp(event.data.timestamp);
+        }
+      };
+      navigator.serviceWorker?.addEventListener("message", handler);
+      // 初期化: localStorageから復元
+      const ts = localStorage.getItem("pushTimestamp");
+      if (ts) setPushTimestamp(Number(ts));
+      return () => {
+        navigator.serviceWorker?.removeEventListener("message", handler);
+      };
+    }, []);
+
+    // カウントダウン管理
+    useEffect(() => {
+      if (!pushTimestamp) {
+        setCountdown(0);
+        return;
+      }
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const diff = Math.floor((pushTimestamp + 2 * 60 * 1000 - now) / 1000);
+        setCountdown(diff > 0 ? diff : 0);
+        if (diff <= 0) {
+          localStorage.removeItem("pushTimestamp");
+          setPushTimestamp(null);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }, [pushTimestamp]);
   const { user, profile, isLoading } = useAuth();
   const [posts, setPosts] = useState<PostWithProfile[]>([]);
   const [selectedPost, setSelectedPost] = useState<PostWithProfile | null>(null);
@@ -178,14 +217,30 @@ export default function TimelinePage() {
 
       {/* カメラボタン（固定） */}
       <div className="fixed bottom-6 left-1/2 z-20 -translate-x-1/2">
-        <button
-          type="button"
-          onClick={handleCameraClick}
-          disabled={isUploading || !user}
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-        >
-          {isUploading ? "⏳" : "📸"}
-        </button>
+        {(countdown > 0) ? (
+          <div className="flex flex-col items-center">
+            <button
+              type="button"
+              onClick={handleCameraClick}
+              disabled={isUploading || !user}
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+            >
+              {isUploading ? "⏳" : "📸"}
+            </button>
+            <div className="mt-2 text-lg font-bold text-foreground">
+              {`残り ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, "0")}`}
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleCameraClick}
+            disabled={isUploading || !user}
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+          >
+            {isUploading ? "⏳" : "📸"}
+          </button>
+        )}
         {/* 隠しファイル入力（カメラ起動） */}
         <input
           ref={fileInputRef}

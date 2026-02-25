@@ -1,12 +1,19 @@
 self.addEventListener('push', function(event) {
   const data = event.data ? event.data.json() : {};
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Yamboreal', {
-      body: data.body || '今すぐ撮影！',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
-      data: data.url || '/' // 通知クリック時の遷移先
-    })
+    (async () => {
+      // 通知受信時に全クライアントへタイムスタンプを送信
+      const allClients = await clients.matchAll({ includeUncontrolled: true });
+      for (const client of allClients) {
+        client.postMessage({ type: 'push-received', timestamp: Date.now() });
+      }
+      await self.registration.showNotification(data.title || 'Yamboreal', {
+        body: data.body || '今すぐ撮影！',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        data: data.url || '/'
+      });
+    })()
   );
 });
 
