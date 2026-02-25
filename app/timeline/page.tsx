@@ -1,76 +1,101 @@
 "use client";
 
+import { uploadImage, createPost, fetchPosts } from "@/lib/api";
+import type { PostWithProfile } from "@/lib/database.types";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../providers";
-
-// デモ用の投稿データ
-const demoPosts = [
-  {
-    id: 1,
-    username: "tanaka_yuki",
-    timestamp: "2分前",
-    imageUrl: "https://picsum.photos/seed/post1/400/500",
-  },
-  {
-    id: 2,
-    username: "sato_haruka",
-    timestamp: "5分前",
-    imageUrl: "https://picsum.photos/seed/post2/400/500",
-  },
-  {
-    id: 3,
-    username: "yamada_ken",
-    timestamp: "12分前",
-    imageUrl: "https://picsum.photos/seed/post3/400/500",
-  },
-  {
-    id: 4,
-    username: "suzuki_mika",
-    timestamp: "18分前",
-    imageUrl: "https://picsum.photos/seed/post4/400/500",
-  },
-  {
-    id: 5,
-    username: "takahashi_ryo",
-    timestamp: "25分前",
-    imageUrl: "https://picsum.photos/seed/post5/400/500",
-  },
-  {
-    id: 6,
-    username: "watanabe_ai",
-    timestamp: "32分前",
-    imageUrl: "https://picsum.photos/seed/post6/400/500",
-  },
-  {
-    id: 7,
-    username: "ito_sota",
-    timestamp: "45分前",
-    imageUrl: "https://picsum.photos/seed/post7/400/500",
-  },
-  {
-    id: 8,
-    username: "nakamura_yui",
-    timestamp: "52分前",
-    imageUrl: "https://picsum.photos/seed/post8/400/500",
-  },
-  {
-    id: 9,
-    username: "kobayashi_ren",
-    timestamp: "1時間前",
-    imageUrl: "https://picsum.photos/seed/post9/400/500",
-  },
-];
-
-type Post = (typeof demoPosts)[number];
 
 export default function TimelinePage() {
   const { user, profile, isLoading, isAnonymous } = useAuth();
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [posts, setPosts] = useState<PostWithProfile[]>([]);
+  const [selectedPost, setSelectedPost] = useState<PostWithProfile | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 投稿一覧を取得
+  useEffect(() => {
+    const loadPosts = async () => {
+      const { data } = await fetchPosts();
+      setPosts(data);
+    };
+    loadPosts();
+  }, []);
+
+  // カメラボタンクリック
+  const handleCameraClick = () => {
+    if (!user) {
+      alert("ログインしてください");
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  // 写真選択時
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploading(true);
+
+    try {
+      // 画像をアップロード
+      const { url, error: uploadError } = await uploadImage(file, user.id);
+      if (uploadError || !url) {
+        alert("画像のアップロードに失敗しました");
+        setIsUploading(false);
+        return;
+      }
+
+      // 投稿を作成
+      const { data: post, error: postError } = await createPost({
+        user_id: user.id,
+        image_url: url,
+      });
+
+      if (postError || !post) {
+        alert("投稿の作成に失敗しました");
+        setIsUploading(false);
+        return;
+      }
+
+      // 投稿一覧を再取得
+      const { data: updatedPosts } = await fetchPosts();
+      setPosts(updatedPosts);
+
+      alert("投稿しました！");
+    } catch (err) {
+      console.error("Post error:", err);
+      alert("エラーが発生しました");
+    } finally {
+      setIsUploading(false);
+      // inputをリセット
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // 相対時間を計算
+  const getRelativeTime = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMins < 1) return "たった今";
+    if (diffMins < 60) return `${diffMins}分前`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}時間前`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}日前`;
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       {/* ヘッダー */}
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-background/80 backdrop-blur-sm dark:border-zinc-800">
         <div className="flex items-center justify-between px-4 py-3">
@@ -119,25 +144,58 @@ export default function TimelinePage() {
 
       {/* グリッドタイムライン */}
       <main className="px-1 py-1">
-        <div className="grid grid-cols-3 gap-0.5">
-          {demoPosts.map((post) => (
-            <button
-              key={post.id}
-              type="button"
-              className="relative aspect-square w-full overflow-hidden bg-zinc-200 dark:bg-zinc-800"
-              onClick={() => setSelectedPost(post)}
-            >
-              <Image
-                src={post.imageUrl}
-                alt={`${post.username}の投稿`}
-                fill
-                className="object-cover transition-transform hover:scale-105"
-                unoptimized
-              />
-            </button>
-          ))}
-        </div>
+        {posts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-4 text-5xl">📷</div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              まだ投稿がありません
+            </p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">
+              カメラボタンから写真を撮ってみましょう
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-0.5">
+            {posts.map((post) => (
+              <button
+                key={post.id}
+                type="button"
+                className="relative aspect-square w-full overflow-hidden bg-zinc-200 dark:bg-zinc-800"
+                onClick={() => setSelectedPost(post)}
+              >
+                <Image
+                  src={post.image_url}
+                  alt={`${post.profiles?.display_name || "ユーザー"}の投稿`}
+                  fill
+                  className="object-cover transition-transform hover:scale-105"
+                  unoptimized
+                />
+              </button>
+            ))}
+          </div>
+        )}
       </main>
+
+      {/* カメラボタン（固定） */}
+      <div className="fixed bottom-6 left-1/2 z-20 -translate-x-1/2">
+        <button
+          type="button"
+          onClick={handleCameraClick}
+          disabled={isUploading || !user}
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+        >
+          {isUploading ? "⏳" : "📸"}
+        </button>
+        {/* 隠しファイル入力（カメラ起動） */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
 
       {/* モーダル */}
       {selectedPost && (
@@ -163,10 +221,10 @@ export default function TimelinePage() {
               <div className="h-10 w-10 rounded-full bg-zinc-300 dark:bg-zinc-700" />
               <div>
                 <p className="text-sm font-medium text-foreground">
-                  {selectedPost.username}
+                  {selectedPost.profiles?.display_name || "ユーザー"}
                 </p>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {selectedPost.timestamp}
+                  {getRelativeTime(selectedPost.created_at)}
                 </p>
               </div>
             </div>
@@ -174,8 +232,8 @@ export default function TimelinePage() {
             {/* 画像 */}
             <div className="relative aspect-[4/5] w-full">
               <Image
-                src={selectedPost.imageUrl}
-                alt={`${selectedPost.username}の投稿`}
+                src={selectedPost.image_url}
+                alt={`${selectedPost.profiles?.display_name || "ユーザー"}の投稿`}
                 fill
                 className="object-cover"
                 unoptimized

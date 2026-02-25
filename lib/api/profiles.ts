@@ -27,13 +27,39 @@ export async function fetchProfile(
  * プロフィールが存在するか確認
  */
 export async function checkProfileExists(userId: string): Promise<boolean> {
-  const { data } = await supabase
+  const { data: profiles } = await supabase
     .from("profiles")
     .select("uuid")
     .eq("uuid", userId)
     .maybeSingle();
 
-  return !!data;
+  return !!profiles;
+}
+
+/**
+ * プロフィールが存在するか確認（詳細情報付き）
+ */
+export async function checkProfileExistsWithData(userId: string): Promise<{
+  exists: boolean;
+  profile: ProfileWithCrew | null;
+}> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(`
+      *,
+      crews (
+        id,
+        name
+      )
+    `)
+    .eq("uuid", userId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return { exists: false, profile: null };
+  }
+
+  return { exists: true, profile: data as ProfileWithCrew };
 }
 
 /**

@@ -14,3 +14,15 @@ export type Crew = {
 export type ProfileWithCrew = Profile & {
   crews: Crew | null;
 };
+
+export type Post = {
+  id: number;
+  user_id: string;
+  image_url: string;
+  created_at: string;
+};
+
+// 投稿とプロフィール情報を結合した型
+export type PostWithProfile = Post & {
+  profiles: Profile | null;
+};
