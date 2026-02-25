@@ -67,7 +67,7 @@ export default function TimelinePage() {
       alert("投稿しました！");
     } catch (err) {
       console.error("Post error:", err);
-      alert("エラーが発生しました");
+      alert(err instanceof Error ? err.message : "エラーが発生しました");
     } finally {
       setIsUploading(false);
       // inputをリセット
