@@ -20,12 +20,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const { title, body, url } = req.body;
   // 全購読者取得
-  const { data, error } = await supabase.from("push_subscriptions").select("subscription");
+  const { data, error } = await supabase.from("push_subscriptions").select("endpoint, p256dh, auth");
   if (error) return res.status(500).json({ error: error.message });
   let successCount = 0;
   for (const row of data || []) {
     try {
-      await webpush.sendNotification(row.subscription, JSON.stringify({ title, body, url }));
+      const subscription = {
+        endpoint: row.endpoint,
+        keys: {
+          p256dh: row.p256dh,
+          auth: row.auth,
+        },
+      };
+      await webpush.sendNotification(subscription, JSON.stringify({ title, body, url }));
       successCount++;
     } catch (e) {
       // エラーは無視
