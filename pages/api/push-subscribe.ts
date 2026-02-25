@@ -14,17 +14,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!subscription) {
     return res.status(400).json({ error: "subscription required" });
   }
-  // ユーザーID取得（認証済みの場合のみ）
+  const { endpoint, keys } = subscription;
+  if (!endpoint || !keys || !keys.p256dh || !keys.auth) {
+    return res.status(400).json({ error: "invalid subscription format" });
+  }
   const user_id = req.headers["x-user-id"] || null;
-  // Supabase保存
   const { error } = await supabase.from("push_subscriptions").insert([
     {
       user_id,
-      subscription,
+      endpoint,
+      p256dh: keys.p256dh,
+      auth: keys.auth,
     },
   ]);
   if (error) {
-    return res.status(500).json({ error: error.message });
+    console.error("Supabase insert error:", error);
+    return res.status(500).json({ error: error.message, details: error });
   }
   return res.status(200).json({ success: true });
 }
