@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../providers";
 
 export default function ProfileSetupPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { sessionToken, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   const [crews, setCrews] = useState<Crew[]>([]);
@@ -34,9 +34,9 @@ export default function ProfileSetupPage() {
   // 既にプロフィールがあるか確認
   useEffect(() => {
     const checkProfile = async () => {
-      if (!user) return;
+      if (!sessionToken) return;
 
-      const exists = await checkProfileExists(user.id);
+      const exists = await checkProfileExists(sessionToken);
 
       if (exists) {
         // 既にプロフィールがある場合はタイムラインへ
@@ -45,12 +45,12 @@ export default function ProfileSetupPage() {
     };
 
     checkProfile();
-  }, [user, router]);
+  }, [sessionToken, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user) {
+    if (!sessionToken) {
       setError("ログインが必要です");
       return;
     }
@@ -69,7 +69,7 @@ export default function ProfileSetupPage() {
     setError(null);
 
     const { success, error: createError } = await createProfile({
-      uuid: user.id,
+      uuid: sessionToken ?? "",
       display_name: displayName.trim(),
       crew_id: selectedCrewId,
     });

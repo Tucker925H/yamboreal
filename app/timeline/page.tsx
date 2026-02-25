@@ -47,7 +47,7 @@ export default function TimelinePage() {
       }, 1000);
       return () => clearInterval(interval);
     }, [pushTimestamp]);
-  const { user, profile, isLoading } = useAuth();
+  const { sessionToken, profile, isLoading } = useAuth();
   const [posts, setPosts] = useState<PostWithProfile[]>([]);
   const [selectedPost, setSelectedPost] = useState<PostWithProfile | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -64,7 +64,7 @@ export default function TimelinePage() {
 
   // カメラボタンクリック
   const handleCameraClick = () => {
-    if (!user) {
+    if (!sessionToken) {
       alert("ログインしてください");
       return;
     }
@@ -74,13 +74,13 @@ export default function TimelinePage() {
   // 写真選択時
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !sessionToken) return;
 
     setIsUploading(true);
 
     try {
       // 画像をアップロード
-      const { url, error: uploadError } = await uploadImage(file, user.id);
+      const { url, error: uploadError } = await uploadImage(file, sessionToken);
       if (uploadError || !url) {
         alert("画像のアップロードに失敗しました");
         setIsUploading(false);
@@ -89,7 +89,7 @@ export default function TimelinePage() {
 
       // 投稿を作成
       const { data: post, error: postError } = await createPost({
-        user_id: user.id,
+        user_id: sessionToken,
         image_url: url,
       });
 
@@ -137,15 +137,8 @@ export default function TimelinePage() {
     <div className="min-h-screen bg-background pb-20">
       {/* ヘッダー */}
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-background/80 backdrop-blur-sm dark:border-zinc-800">
-        <div className="flex items-center justify-between px-4 py-3">
-          <Link
-            href="/"
-            className="text-sm text-zinc-500 hover:text-foreground dark:text-zinc-400"
-          >
-            ← 戻る
-          </Link>
+        <div className="flex items-center justify-center px-4 py-3">
           <h1 className="text-lg font-bold">YamBoReal.</h1>
-          <div className="w-10" /> {/* スペーサー */}
         </div>
       </header>
 
@@ -153,7 +146,7 @@ export default function TimelinePage() {
       <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-2 dark:border-zinc-800 dark:bg-zinc-900">
         {isLoading ? (
           <p className="text-xs text-zinc-500">読み込み中...</p>
-        ) : user && profile ? (
+        ) : sessionToken && profile ? (
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-green-500" />
             <p className="text-xs font-medium text-foreground">
@@ -222,7 +215,7 @@ export default function TimelinePage() {
             <button
               type="button"
               onClick={handleCameraClick}
-              disabled={isUploading || !user}
+              disabled={isUploading || !sessionToken}
               className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
             >
               {isUploading ? "⏳" : "📸"}
@@ -235,7 +228,7 @@ export default function TimelinePage() {
           <button
             type="button"
             onClick={handleCameraClick}
-            disabled={isUploading || !user}
+            disabled={isUploading || !sessionToken}
             className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
           >
             {isUploading ? "⏳" : "📸"}

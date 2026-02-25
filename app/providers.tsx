@@ -13,19 +13,19 @@ import {
 } from "react";
 
 type AuthContextType = {
-  user: User | null;
+  sessionToken: string | null;
   profile: ProfileWithCrew | null;
   isLoading: boolean;
-  isAnonymous: boolean;
   refreshProfile: () => Promise<void>;
+  logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
-  user: null,
+  sessionToken: null,
   profile: null,
   isLoading: true,
-  isAnonymous: false,
   refreshProfile: async () => {},
+  logout: () => {},
 });
 
 export function useAuth() {
@@ -33,61 +33,56 @@ export function useAuth() {
 }
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileWithCrew | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadProfile = async (userId: string) => {
-    const { data } = await fetchProfile(userId);
-    console.log("fetchProfile データ:", data);
-    setProfile(data);
+    // session_tokenでプロフィール取得
+    try {
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_token: userId }),
+      });
+      const data = await res.json();
+      setProfile(data.profile || null);
+    } catch (e) {
+      setProfile(null);
+    }
   };
 
   const refreshProfile = async () => {
-    if (user) {
-      await loadProfile(user.id);
+    if (sessionToken) {
+      await loadProfile(sessionToken);
     }
   };
 
   useEffect(() => {
-    // 現在のセッションを取得
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session?.user) {
-        setUser(session.user);
-        await loadProfile(session.user.id);
-      }
-      // 未ログインの場合はそのまま（匿名認証は使わない）
+    // session_tokenをlocalStorageから取得
+    const token = typeof window !== "undefined" ? localStorage.getItem("session_token") : null;
+    if (token) {
+      setSessionToken(token);
+      loadProfile(token).finally(() => setIsLoading(false));
+    } else {
+      setSessionToken(null);
+      setProfile(null);
       setIsLoading(false);
-    };
-
-    getSession();
-
-    // 認証状態の変更を監視
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await loadProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    }
   }, []);
 
-  const isAnonymous = user?.is_anonymous ?? false;
+  // ログアウト
+  const logout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("session_token");
+    }
+    setSessionToken(null);
+    setProfile(null);
+  };
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, isLoading, isAnonymous, refreshProfile }}
+      value={{ sessionToken, profile, isLoading, refreshProfile, logout }}
     >
       {children}
     </AuthContext.Provider>

@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "./providers";
 
 export default function Home() {
-  const { user, isLoading } = useAuth();
+  const { sessionToken, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && sessionToken) {
       router.replace("/timeline");
     }
-  }, [user, isLoading, router]);
+  }, [isLoading, router]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6">
