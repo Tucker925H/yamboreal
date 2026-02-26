@@ -213,30 +213,23 @@ export default function TimelinePage() {
 
       {/* カメラボタン（固定） */}
       <div className="fixed bottom-6 left-1/2 z-20 -translate-x-1/2">
-        {(countdown > 0) ? (
-          <div className="flex flex-col items-center">
-            <button
-              type="button"
-              onClick={handleCameraClick}
-              disabled={isUploading || !sessionToken || !profile}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-            >
-              {isUploading ? "⏳" : "📸"}
-            </button>
-            <div className="mt-2 text-lg font-bold text-foreground">
-              {`残り ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, "0")}`}
-            </div>
-          </div>
-        ) : (
+        <div className="flex flex-col items-center">
           <button
             type="button"
             onClick={handleCameraClick}
-            disabled={isUploading || !sessionToken || !profile}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+            disabled={isUploading || !sessionToken || !profile || countdown <= 0}
+            className={`flex h-16 w-16 items-center justify-center rounded-full text-3xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${countdown > 0 ? 'bg-foreground text-background' : 'bg-zinc-400 text-zinc-200 cursor-not-allowed'}`}
           >
             {isUploading ? "⏳" : "📸"}
           </button>
-        )}
+          {countdown > 0 ? (
+            <div className="mt-2 text-lg font-bold text-foreground">
+              {`残り ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, "0")}`}
+            </div>
+          ) : (
+            <div className="mt-2 text-sm text-zinc-500">Push通知が来るまで撮影できません</div>
+          )}
+        </div>
         {/* 隠しファイル入力（カメラ起動） */}
         <input
           ref={fileInputRef}
@@ -245,6 +238,7 @@ export default function TimelinePage() {
           capture="environment"
           onChange={handleFileChange}
           className="hidden"
+          disabled={countdown <= 0}
         />
       </div>
 
