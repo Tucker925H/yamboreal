@@ -52,7 +52,10 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6">
       <form onSubmit={handleLogin} className="w-full max-w-xs space-y-6">
-        <h1 className="text-2xl font-bold">シンプルログイン</h1>
+        <h1 className="text-2xl font-bold">ログイン</h1>
+        <div className="text-xs text-gray-500 bg-yellow-100 border border-yellow-300 rounded px-2 py-1">
+          ※同じ人が複数名義で登録可能です<br />
+        </div>
         <input
           type="text"
           value={displayName}
