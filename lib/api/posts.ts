@@ -9,9 +9,13 @@ export async function uploadImage(
   userId: string
 ): Promise<{ url: string | null; error: Error | null }> {
   try {
-    // ファイル名を生成（ユーザーID + タイムスタンプ + 拡張子）
+    // ファイル名を生成（ユーザーID + タイムスタンプ + ランダム + 拡張子）
     const fileExt = file.name.split(".").pop() || "jpg";
-    const fileName = `${userId}/${Date.now()}.${fileExt}`;
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    const fileName = `${userId}/${Date.now()}_${randomStr}.${fileExt}`;
+
+    // デバッグ: ファイル名とfileの型
+    console.log("Uploading file:", { fileName, file, fileType: typeof file });
 
     // Storageにアップロード
     const { data, error } = await supabase.storage
@@ -24,6 +28,7 @@ export async function uploadImage(
     console.log("Upload response:", { data, error });
 
     if (error) {
+      alert(`画像アップロードエラー: ${error.message}`);
       console.error("Upload error:", error);
       return { url: null, error };
     }
@@ -35,6 +40,7 @@ export async function uploadImage(
     console.log("Public URL data:", urlData);
     return { url: urlData.publicUrl, error: null };
   } catch (e) {
+    alert(`画像アップロード例外: ${e instanceof Error ? e.message : e}`);
     console.error("Upload exception:", e);
     return { url: null, error: e as Error };
   }
@@ -44,11 +50,11 @@ export async function uploadImage(
  * 投稿を作成
  */
 export async function createPost(params: {
-  user_id: string;
+  session_token: string;
   image_url: string;
 }): Promise<{ data: Post | null; error: Error | null }> {
-   if (!params.user_id || !params.image_url) {
-    return { data: null, error: new Error("user_idとimage_urlは必須です") };
+   if (!params.session_token || !params.image_url) {
+    return { data: null, error: new Error("session_tokenとimage_urlは必須です") };
   }
   const { data, error } = await supabase
     .from("posts")

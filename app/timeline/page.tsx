@@ -92,7 +92,7 @@ export default function TimelinePage() {
       console.log("Creating post with URL:", url);
       console.log("Profile info:", profile);
       const { data: post, error: postError } = await createPost({
-        user_id: profile.session_token,
+        session_token: profile.session_token,
         image_url: url,
       });
 
@@ -217,7 +217,9 @@ export default function TimelinePage() {
           <button
             type="button"
             onClick={handleCameraClick}
-            disabled={isUploading || !sessionToken || !profile || countdown <= 0}
+            disabled={isUploading || !sessionToken || !profile || countdown <= 0 }
+            // disabled={ false }
+
             className={`flex h-16 w-16 items-center justify-center rounded-full text-3xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${countdown > 0 ? 'bg-foreground text-background' : 'bg-zinc-400 text-zinc-200 cursor-not-allowed'}`}
           >
             {isUploading ? "⏳" : "📸"}
@@ -239,6 +241,7 @@ export default function TimelinePage() {
           onChange={handleFileChange}
           className="hidden"
           disabled={countdown <= 0}
+        //   disabled={ false }
         />
       </div>
 
