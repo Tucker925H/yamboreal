@@ -1,5 +1,5 @@
 export type Profile = {
-  uuid: string;
+  session_token: string;
   display_name: string;
   crew_id: number;
   created_at?: string;
@@ -17,7 +17,7 @@ export type ProfileWithCrew = Profile & {
 
 export type Post = {
   id: number;
-  user_id: string;
+  session_token: string;
   image_url: string;
   created_at: string;
 };

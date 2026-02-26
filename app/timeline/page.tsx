@@ -80,7 +80,7 @@ export default function TimelinePage() {
 
     try {
       // 画像をアップロード
-      const { url, error: uploadError } = await uploadImage(file, profile.uuid);
+      const { url, error: uploadError } = await uploadImage(file, profile.session_token);
       console.log("uploadImage result:", { url, uploadError });
       if (uploadError || !url) {
         alert("画像のアップロードに失敗しました");
@@ -92,7 +92,7 @@ export default function TimelinePage() {
       console.log("Creating post with URL:", url);
       console.log("Profile info:", profile);
       const { data: post, error: postError } = await createPost({
-        user_id: profile.uuid,
+        user_id: profile.session_token,
         image_url: url,
       });
 
