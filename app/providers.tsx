@@ -60,15 +60,25 @@ export function Providers({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // session_tokenをlocalStorageから取得
-    const token = typeof window !== "undefined" ? localStorage.getItem("session_token") : null;
-    if (token) {
-      setSessionToken(token);
-      loadProfile(token).finally(() => setIsLoading(false));
-    } else {
-      setSessionToken(null);
-      setProfile(null);
-      setIsLoading(false);
-    }
+    const syncSession = () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("session_token") : null;
+      if (token) {
+        setSessionToken(token);
+        loadProfile(token).finally(() => setIsLoading(false));
+      } else {
+        setSessionToken(null);
+        setProfile(null);
+        setIsLoading(false);
+      }
+    };
+    syncSession();
+    // storageイベントで他タブや即時反映
+    window.addEventListener("storage", syncSession);
+    window.addEventListener("yam-auth-refresh", syncSession);
+    return () => {
+      window.removeEventListener("storage", syncSession);
+      window.removeEventListener("yam-auth-refresh", syncSession);
+    };
   }, []);
 
   // ログアウト

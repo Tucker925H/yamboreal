@@ -64,7 +64,7 @@ export default function TimelinePage() {
 
   // カメラボタンクリック
   const handleCameraClick = () => {
-    if (!sessionToken) {
+    if (!sessionToken || !profile) {
       alert("ログインしてください");
       return;
     }
@@ -74,13 +74,14 @@ export default function TimelinePage() {
   // 写真選択時
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !sessionToken) return;
+    if (!file || !sessionToken || !profile) return;
 
     setIsUploading(true);
 
     try {
       // 画像をアップロード
-      const { url, error: uploadError } = await uploadImage(file, sessionToken);
+      const { url, error: uploadError } = await uploadImage(file, profile.uuid);
+      console.log("uploadImage result:", { url, uploadError });
       if (uploadError || !url) {
         alert("画像のアップロードに失敗しました");
         setIsUploading(false);
@@ -88,8 +89,10 @@ export default function TimelinePage() {
       }
 
       // 投稿を作成
+      console.log("Creating post with URL:", url);
+      console.log("Profile info:", profile);
       const { data: post, error: postError } = await createPost({
-        user_id: sessionToken,
+        user_id: profile.uuid,
         image_url: url,
       });
 
@@ -215,7 +218,7 @@ export default function TimelinePage() {
             <button
               type="button"
               onClick={handleCameraClick}
-              disabled={isUploading || !sessionToken}
+              disabled={isUploading || !sessionToken || !profile}
               className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
             >
               {isUploading ? "⏳" : "📸"}
@@ -228,7 +231,7 @@ export default function TimelinePage() {
           <button
             type="button"
             onClick={handleCameraClick}
-            disabled={isUploading || !sessionToken}
+            disabled={isUploading || !sessionToken || !profile}
             className="flex h-16 w-16 items-center justify-center rounded-full bg-foreground text-3xl text-background shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
           >
             {isUploading ? "⏳" : "📸"}

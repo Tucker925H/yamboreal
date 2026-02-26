@@ -43,6 +43,8 @@ export default function LoginPage() {
     }
     // session_token保存
     localStorage.setItem("session_token", data.session_token);
+    // Providersに即時反映させるためイベント発火
+    window.dispatchEvent(new Event("yam-auth-refresh"));
     setIsLoading(false);
     router.replace("/timeline");
   };

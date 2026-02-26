@@ -21,6 +21,8 @@ export async function uploadImage(
         upsert: false,
       });
 
+    console.log("Upload response:", { data, error });
+
     if (error) {
       console.error("Upload error:", error);
       return { url: null, error };
@@ -30,7 +32,7 @@ export async function uploadImage(
     const { data: urlData } = supabase.storage
       .from("posts")
       .getPublicUrl(data.path);
-
+    console.log("Public URL data:", urlData);
     return { url: urlData.publicUrl, error: null };
   } catch (e) {
     console.error("Upload exception:", e);
@@ -45,11 +47,13 @@ export async function createPost(params: {
   user_id: string;
   image_url: string;
 }): Promise<{ data: Post | null; error: Error | null }> {
+   if (!params.user_id || !params.image_url) {
+    return { data: null, error: new Error("user_idとimage_urlは必須です") };
+  }
   const { data, error } = await supabase
     .from("posts")
     .insert(params)
     .select()
-    .single();
 
   if (error) {
     console.error("Create post error:", error);
