@@ -54,7 +54,7 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["uuid"]
+            referencedColumns: ["session_token"]
           },
         ]
       }
@@ -65,7 +65,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: number
-          uuid: string | null
+          session_token: string | null
         }
         Insert: {
           created_at?: string
@@ -73,7 +73,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: number
-          uuid?: string | null
+          session_token?: string | null
         }
         Update: {
           created_at?: string
@@ -81,7 +81,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: number
-          uuid?: string | null
+          session_token?: string | null
         }
         Relationships: [
           {

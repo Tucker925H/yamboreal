@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // profiles検索
   let { data: profile } = await supabase
     .from("profiles")
-    .select("id, uuid, display_name, crew_id, session_token")
+    .select("id, display_name, crew_id, session_token")
     .eq("display_name", display_name)
     .eq("crew_id", crew_id)
     .limit(1)
@@ -23,13 +23,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // なければ新規作成
   if (!profile) {
     const session_token = crypto.randomUUID();
-    const uuid = crypto.randomUUID();
     const { data, error } = await supabase
       .from("profiles")
       .insert([
-        { display_name, crew_id, session_token, uuid }
+        { display_name, crew_id, session_token }
       ])
-      .select("id, uuid, display_name, crew_id, session_token")
+      .select("id, display_name, crew_id, session_token")
       .maybeSingle();
     if (error) return res.status(500).json({ error: error.message });
     profile = data;
@@ -40,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from("profiles")
       .update({ session_token })
       .eq("id", profile.id)
-      .select("id, uuid, display_name, crew_id, session_token")
+      .select("id, display_name, crew_id, session_token")
       .maybeSingle();
     if (error) return res.status(500).json({ error: error.message });
     profile = data || { ...profile, session_token };

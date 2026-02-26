@@ -69,7 +69,7 @@ export default function ProfileSetupPage() {
     setError(null);
 
     const { success, error: createError } = await createProfile({
-      uuid: sessionToken ?? "",
+      session_token: sessionToken ?? "",
       display_name: displayName.trim(),
       crew_id: selectedCrewId,
     });

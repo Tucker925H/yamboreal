@@ -29,8 +29,8 @@ export async function fetchProfile(
 export async function checkProfileExists(userId: string): Promise<boolean> {
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("uuid")
-    .eq("uuid", userId)
+    .select("session_token")
+    .eq("session_token", userId)
     .maybeSingle();
 
   return !!profiles;
@@ -52,7 +52,7 @@ export async function checkProfileExistsWithData(userId: string): Promise<{
         name
       )
     `)
-    .eq("uuid", userId)
+    .eq("session_token", userId)
     .maybeSingle();
 
   if (error || !data) {
@@ -66,7 +66,7 @@ export async function checkProfileExistsWithData(userId: string): Promise<{
  * プロフィールを作成
  */
 export async function createProfile(params: {
-  uuid: string;
+  session_token: string;
   display_name: string;
   crew_id: number;
 }): Promise<{ success: boolean; error: Error | null }> {

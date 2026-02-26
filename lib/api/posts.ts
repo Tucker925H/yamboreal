@@ -75,7 +75,7 @@ export async function fetchPosts(): Promise<{
     .select(`
       *,
       profiles (
-        uuid,
+        session_token,
         display_name,
         crew_id,
         crews (
