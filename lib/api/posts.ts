@@ -60,7 +60,7 @@ export async function createPost(params: {
     return { data: null, error };
   }
 
-  return { data, error: null };
+  return { data: (data && data.length > 0 ? data[0] : null), error: null };
 }
 
 /**
@@ -91,5 +91,6 @@ export async function fetchPosts(): Promise<{
     return { data: [], error };
   }
 
-  return { data: data as PostWithProfile[], error: null };
+  // supabase returns null for empty, so fallback to []
+  return { data: (data ?? []) as PostWithProfile[], error: null };
 }
