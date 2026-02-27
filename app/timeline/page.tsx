@@ -206,6 +206,7 @@ export default function TimelinePage() {
                   alt={`${post.profiles?.display_name || "ユーザー"}の投稿`}
                   fill
                   className="object-cover transition-transform hover:scale-105"
+                  priority
                   unoptimized
                 />
               </button>
@@ -286,6 +287,7 @@ export default function TimelinePage() {
                 alt={`${selectedPost.profiles?.display_name || "ユーザー"}の投稿`}
                 fill
                 className="object-cover"
+                priority
                 unoptimized
               />
             </div>
