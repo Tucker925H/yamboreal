@@ -217,9 +217,8 @@ export default function TimelinePage() {
           <button
             type="button"
             onClick={handleCameraClick}
-            disabled={isUploading || !sessionToken || !profile || countdown <= 0 }
-            // disabled={ false }
-
+            // disabled={isUploading || !sessionToken || !profile || countdown <= 0 }
+            disabled={false}
             className={`flex h-16 w-16 items-center justify-center rounded-full text-3xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${countdown > 0 ? 'bg-foreground text-background' : 'bg-zinc-400 text-zinc-200 cursor-not-allowed'}`}
           >
             {isUploading ? "⏳" : "📸"}
@@ -232,16 +231,16 @@ export default function TimelinePage() {
             <div className="mt-2 text-sm text-zinc-500">Push通知が来るまで撮影できません</div>
           )}
         </div>
-        {/* 隠しファイル入力（カメラ起動） */}
+        {/* カメラを起動するコード */}
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
+          capture="user"
           onChange={handleFileChange}
           className="hidden"
-          disabled={countdown <= 0}
-        //   disabled={ false }
+          // disabled={countdown <= 0}
+          disabled={false}
         />
       </div>
 
