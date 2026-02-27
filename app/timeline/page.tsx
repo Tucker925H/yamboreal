@@ -288,6 +288,16 @@ export default function TimelinePage() {
                 className="object-cover"
                 unoptimized
               />
+              {/* ダウンロードボタン（crew_id=13のみ表示） */}
+              {profile?.crew_id === 13 && (
+                <a
+                  href={selectedPost.image_url}
+                  download
+                  className="absolute bottom-3 right-3 z-20 rounded-full bg-black/70 px-3 py-1 text-xs text-white hover:bg-black/90 transition-colors"
+                >
+                  写真をダウンロード
+                </a>
+              )}
             </div>
           </div>
         </div>
