@@ -212,24 +212,24 @@ export default function TimelinePage() {
       </main>
 
       {/* カメラボタン（固定） */}
-      <div className="fixed bottom-6 left-1/2 z-20 -translate-x-1/2">
+      <div className="fixed bottom-10 left-1/2 z-20 -translate-x-1/2">
         <div className="flex flex-col items-center">
-          <button
-            type="button"
-            onClick={handleCameraClick}
-            // disabled={isUploading || !sessionToken || !profile || countdown <= 0 }
-            disabled={false}
-            className={`flex h-16 w-16 items-center justify-center rounded-full text-3xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${countdown > 0 ? 'bg-foreground text-background' : 'bg-zinc-400 text-zinc-200 cursor-not-allowed'}`}
-          >
-            {isUploading ? "⏳" : "📸"}
-          </button>
           {countdown > 0 ? (
             <div className="mt-2 text-lg font-bold text-foreground">
               {`残り ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, "0")}`}
             </div>
           ) : (
-            <div className="mt-2 text-sm text-zinc-500">Push通知が来るまで撮影できません</div>
+            <div className="mt-4 text-sm text-zinc-500 dark:text-zinc-400 py-2">
+              \ 通知が来たらここをタップ /
+            </div>
           )}
+          <button
+            type="button"
+            onClick={handleCameraClick}
+            className={`flex h-16 w-16 items-center justify-center rounded-full text-3xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${countdown > 0 ? 'bg-foreground text-background' : 'bg-zinc-400 text-zinc-200 cursor-not-allowed'}`}
+          >
+            {isUploading ? "⏳" : "📸"}
+          </button>
         </div>
         {/* カメラを起動するコード */}
         <input
@@ -239,8 +239,6 @@ export default function TimelinePage() {
           capture="user"
           onChange={handleFileChange}
           className="hidden"
-          // disabled={countdown <= 0}
-          disabled={false}
         />
       </div>
 
@@ -265,9 +263,6 @@ export default function TimelinePage() {
 
             {/* ユーザー情報 */}
             <div className="flex items-center gap-3 px-4 py-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-300 text-xs font-bold dark:bg-zinc-700">
-                {selectedPost.profiles?.crews?.name || "?"}
-              </div>
               <div>
                 <p className="text-sm font-medium text-foreground">
                   {selectedPost.profiles?.display_name || "ユーザー"}
