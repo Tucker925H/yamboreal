@@ -207,6 +207,7 @@ export default function TimelinePage() {
                   fill
                   className="object-cover transition-transform hover:scale-105"
                   loading="eager"
+                  priority
                   unoptimized
                 />
               </button>
@@ -288,6 +289,7 @@ export default function TimelinePage() {
                 fill
                 className="object-cover"
                 loading="eager"
+                priority
                 unoptimized
               />
             </div>
