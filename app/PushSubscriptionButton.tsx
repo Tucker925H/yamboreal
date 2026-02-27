@@ -1,9 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function PushSubscriptionButton() {
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // 既にPush通知の許可があるか確認
+    if (Notification.permission === "granted") {
+      setSubscribed(true);
+    }
+  }, []);
 
   async function subscribe() {
     setLoading(true);
@@ -55,17 +62,18 @@ export default function PushSubscriptionButton() {
         position: "fixed",
         bottom: 16,
         right: 16,
-        zIndex: 9999,
-        padding: "12px 24px",
+        zIndex: 0,
+        padding: "6px 18px",
         background: subscribed ? "#aaa" : "#007aff",
         color: "#fff",
         borderRadius: "8px",
         fontWeight: "bold",
         border: "none",
+        fontSize: "14px",
         cursor: loading || subscribed ? "not-allowed" : "pointer",
       }}
     >
-      {subscribed ? "通知購読済み" : loading ? "購読中..." : "Push通知購読"}
+      {subscribed ? "通知許可済み" : loading ? "設定中..." : "通知許可"}
     </button>
   );
 }

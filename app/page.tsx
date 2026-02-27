@@ -15,7 +15,11 @@ export default function Home() {
   }, [isLoading, router]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6">
+    <main className="flex min-h-screen flex-col items-center justify-center px-6 relative">
+      {/* バージョン表示 */}
+      <div className="absolute top-4 right-6 text-xs text-zinc-500 dark:text-zinc-400 select-none">
+        v1.0.0
+      </div>
       {/* ヒーローセクション */}
       <div className="flex flex-col items-center text-center">
         {/* アプリ名 */}
