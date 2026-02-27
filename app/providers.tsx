@@ -40,12 +40,7 @@ export function Providers({ children }: { children: ReactNode }) {
   const loadProfile = async (userId: string) => {
     // session_tokenでプロフィール取得
     try {
-      const res = await fetch("/api/profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_token: userId }),
-      });
-      const data = await res.json();
+      const { data, error } = await fetchProfile(userId);
       setProfile(data.profile || null);
     } catch (e) {
       setProfile(null);
