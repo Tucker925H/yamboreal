@@ -194,7 +194,7 @@ export default function TimelinePage() {
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-0.5">
-            {posts.map((post) => (
+            {posts.map((post, index) => (
               <button
                 key={post.id}
                 type="button"
@@ -206,8 +206,8 @@ export default function TimelinePage() {
                   alt={`${post.profiles?.display_name || "ユーザー"}の投稿`}
                   fill
                   className="object-cover transition-transform hover:scale-105"
-                  loading="eager"
-                  priority
+                  priority={index === 11}
+                  loading={index === 11 ? undefined : "lazy"}
                   unoptimized
                 />
               </button>
@@ -288,7 +288,6 @@ export default function TimelinePage() {
                 alt={`${selectedPost.profiles?.display_name || "ユーザー"}の投稿`}
                 fill
                 className="object-cover"
-                loading="eager"
                 priority
                 unoptimized
               />
