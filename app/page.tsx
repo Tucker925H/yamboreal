@@ -18,7 +18,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center px-6 relative">
       {/* バージョン表示 */}
       <div className="absolute top-4 right-6 text-xs text-zinc-500 dark:text-zinc-400 select-none">
-        v1.0.0
+        v1.1.0
       </div>
       {/* ヒーローセクション */}
       <div className="flex flex-col items-center text-center">
