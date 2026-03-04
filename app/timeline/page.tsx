@@ -207,6 +207,7 @@ export default function TimelinePage() {
                   fill
                   className="object-cover transition-transform hover:scale-105"
                   unoptimized
+                  loading="eager"
                 />
               </button>
             ))}
@@ -287,6 +288,7 @@ export default function TimelinePage() {
                 fill
                 className="object-cover"
                 unoptimized
+                loading="eager"
               />
               {/* ダウンロードボタン（crew_id=13のみ表示） */}
               {profile?.crew_id === 13 && (

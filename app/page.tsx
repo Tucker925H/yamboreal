@@ -8,11 +8,11 @@ export default function Home() {
   const { sessionToken, isLoading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoading && sessionToken) {
-      router.replace("/timeline");
-    }
-  }, [isLoading, router]);
+  // useEffect(() => {
+  //   if (!isLoading && sessionToken) {
+  //     router.replace("/timeline");
+  //   }
+  // }, [isLoading, router]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 relative">

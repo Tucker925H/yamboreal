@@ -40,13 +40,12 @@ export function Providers({ children }: { children: ReactNode }) {
   const loadProfile = async (userId: string) => {
     // session_tokenでプロフィール取得
     try {
-      const res = await fetch("/api/profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_token: userId }),
-      });
-      const data = await res.json();
-      setProfile(data.profile || null);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('session_token', userId)
+      .maybeSingle();
+      setProfile(profile || null);
     } catch (e) {
       setProfile(null);
     }
