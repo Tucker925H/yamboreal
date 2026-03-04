@@ -5,6 +5,7 @@ import type { PostWithProfile } from "@/lib/database.types";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import useSWR from "swr";
 import { useAuth } from "../providers";
 
 export default function TimelinePage() {
@@ -48,19 +49,25 @@ export default function TimelinePage() {
       return () => clearInterval(interval);
     }, [pushTimestamp]);
   const { sessionToken, profile, isLoading } = useAuth();
-  const [posts, setPosts] = useState<PostWithProfile[]>([]);
+  
+  // SWRで投稿一覧をキャッシュ (初回取得後はキャッシュを使用)
+  const { data: postsData, mutate: mutatePosts } = useSWR(
+    "posts",
+    async () => {
+      const { data } = await fetchPosts();
+      return data;
+    },
+    {
+      revalidateOnFocus: false,  // フォーカス時に再取得しない
+      revalidateOnReconnect: false,  // 再接続時に再取得しない
+      dedupingInterval: 60000,  // 60秒間は重複リクエストを防止
+    }
+  );
+  const posts = postsData ?? [];
+  
   const [selectedPost, setSelectedPost] = useState<PostWithProfile | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // 投稿一覧を取得
-  useEffect(() => {
-    const loadPosts = async () => {
-      const { data } = await fetchPosts();
-      setPosts(data);
-    };
-    loadPosts();
-  }, []);
 
   // カメラボタンクリック
   const handleCameraClick = () => {
@@ -102,9 +109,8 @@ export default function TimelinePage() {
         return;
       }
 
-      // 投稿一覧を再取得
-      const { data: updatedPosts } = await fetchPosts();
-      setPosts(updatedPosts);
+      // SWRのキャッシュを更新（再取得をトリガー）
+      await mutatePosts();
 
       alert("投稿しました！");
     } catch (err) {
