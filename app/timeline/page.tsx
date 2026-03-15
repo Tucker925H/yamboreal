@@ -295,6 +295,7 @@ export default function TimelinePage() {
                 height={1000}
                 className="h-auto w-full object-inherit" // 自動計算
                 quality={75}  // 画質設定
+                loading="eager"
               />
               {/* ダウンロードボタン（crew_id=13のみ表示） */}
               {profile?.crew_id === 13 && (
