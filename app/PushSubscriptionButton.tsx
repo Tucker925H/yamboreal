@@ -60,8 +60,8 @@ export default function PushSubscriptionButton() {
       onClick={subscribe}
       style={{
         position: "fixed",
-        bottom: 16,
-        right: 16,
+        bottom: 40,
+        right: 26,
         zIndex: 0,
         padding: "6px 18px",
         background: subscribed ? "#aaa" : "#007aff",
