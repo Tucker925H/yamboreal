@@ -8,6 +8,32 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { useAuth } from "../providers";
 
+// ---- イベント定義 ----
+// 新しいイベントを追加するには、この配列にオブジェクトを追記するだけでOK
+type TimelineEvent = {
+  id: string;
+  name: string;
+  startDate: string; // JST YYYY-MM-DD
+  endDate: string;   // JST YYYY-MM-DD (inclusive)
+};
+
+const EVENTS: TimelineEvent[] = [
+  {
+    id: "3rd-kinki-rs-yamboree-2026",
+    name: "3rd KINKI RS YamBoree",
+    startDate: "2026-02-26",
+    endDate: "2026-03-02",
+  },
+  // 例: 次のイベントはここに追加
+  // { id: "next-event", name: "Next Event", startDate: "2026-08-01", endDate: "2026-08-03" },
+];
+
+/** UTC の created_at 文字列を JST の YYYY-MM-DD に変換する */
+const toJSTDateString = (utcString: string): string => {
+  const jst = new Date(new Date(utcString).getTime() + 9 * 60 * 60 * 1000);
+  return jst.toISOString().slice(0, 10);
+};
+
 export default function TimelinePage() {
     // Push通知受信時のタイムスタンプ
     const [pushTimestamp, setPushTimestamp] = useState<number | null>(null);
@@ -67,6 +93,7 @@ export default function TimelinePage() {
   
   const [selectedPost, setSelectedPost] = useState<PostWithProfile | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // カメラボタンクリック
@@ -124,6 +151,44 @@ export default function TimelinePage() {
       }
     }
   };
+
+  // 日付ラベルを返す
+  const getDateLabel = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const toDay = (d: Date) => d.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" });
+
+    if (toDay(date) === toDay(today)) return "今日";
+    if (toDay(date) === toDay(yesterday)) return "昨日";
+    return date.toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" });
+  };
+
+  // イベントフィルタ適用
+  const filteredPosts = selectedEventId
+    ? (() => {
+        const event = EVENTS.find((e) => e.id === selectedEventId);
+        if (!event) return posts;
+        return posts.filter((post) => {
+          const d = toJSTDateString(post.created_at);
+          return d >= event.startDate && d <= event.endDate;
+        });
+      })()
+    : posts;
+
+  // 投稿を日付ごとにグループ化
+  const postsByDate = filteredPosts.reduce<{ date: string; label: string; posts: PostWithProfile[] }[]>((acc, post) => {
+    const dateKey = new Date(post.created_at).toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" });
+    const existing = acc.find((g) => g.date === dateKey);
+    if (existing) {
+      existing.posts.push(post);
+    } else {
+      acc.push({ date: dateKey, label: getDateLabel(post.created_at), posts: [post] });
+    }
+    return acc;
+  }, []);
 
   // 相対時間を計算
   const getRelativeTime = (dateString: string) => {
@@ -186,9 +251,42 @@ export default function TimelinePage() {
         )}
       </div>
 
+      {/* イベントフィルターバー */}
+      {EVENTS.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 scrollbar-none">
+          <button
+            type="button"
+            onClick={() => setSelectedEventId(null)}
+            className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              selectedEventId === null
+                ? "bg-foreground text-background"
+                : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+            }`}
+          >
+            すべて
+          </button>
+          {EVENTS.map((event) => (
+            <button
+              key={event.id}
+              type="button"
+              onClick={() =>
+                setSelectedEventId((prev) => (prev === event.id ? null : event.id))
+              }
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                selectedEventId === event.id
+                  ? "bg-foreground text-background"
+                  : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+              }`}
+            >
+              {event.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* グリッドタイムライン */}
       <main className="px-1 py-1">
-        {posts.length === 0 ? (
+        {filteredPosts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="mb-4 text-5xl">📷</div>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -199,23 +297,34 @@ export default function TimelinePage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-0.5">
-            {posts.map((post) => (
-              <button
-                key={post.id}
-                type="button"
-                className="relative aspect-square w-full overflow-hidden bg-zinc-200 dark:bg-zinc-800"
-                onClick={() => setSelectedPost(post)}
-              >
-                <Image
-                  src={post.image_url}
-                  alt={`${post.profiles?.display_name || "ユーザー"}の投稿`}
-                  sizes="33vw"
-                  fill
-                  className="object-cover transition-transform hover:scale-105"
-                  quality={75}  // 画質設定
-                />
-              </button>
+          <div className="flex flex-col gap-2">
+            {postsByDate.map((group) => (
+              <div key={group.date}>
+                {/* 日付区切り */}
+                <div className="sticky top-[49px] z-[5] flex items-center gap-2 bg-background/90 backdrop-blur-sm px-2 py-1.5">
+                  <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{group.label}</span>
+                  <div className="flex-1 border-t border-zinc-200 dark:border-zinc-800" />
+                </div>
+                <div className="grid grid-cols-3 gap-0.5">
+                  {group.posts.map((post) => (
+                    <button
+                      key={post.id}
+                      type="button"
+                      className="relative aspect-square w-full overflow-hidden bg-zinc-200 dark:bg-zinc-800"
+                      onClick={() => setSelectedPost(post)}
+                    >
+                      <Image
+                        src={post.image_url}
+                        alt={`${post.profiles?.display_name || "ユーザー"}の投稿`}
+                        sizes="33vw"
+                        fill
+                        className="object-cover transition-transform hover:scale-105"
+                        quality={75}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
