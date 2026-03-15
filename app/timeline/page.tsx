@@ -147,7 +147,7 @@ export default function TimelinePage() {
       {/* ヘッダー */}
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-background/80 backdrop-blur-sm dark:border-zinc-800">
         <div className="absolute top-5 right-6 text-xs text-zinc-500 dark:text-zinc-400 select-none">
-        v1.0.0
+        v1.1.0
       </div>
         <div className="flex items-center justify-center px-4 py-3">
           <h1 className="text-lg font-bold">YamBoReal.</h1>
