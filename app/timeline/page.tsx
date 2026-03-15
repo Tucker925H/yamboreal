@@ -210,10 +210,9 @@ export default function TimelinePage() {
                 <Image
                   src={post.image_url}
                   alt={`${post.profiles?.display_name || "ユーザー"}の投稿`}
+                  sizes="33vw"
                   fill
                   className="object-cover transition-transform hover:scale-105"
-                  unoptimized
-                  loading="eager"
                   quality={75}  // 画質設定
                 />
               </button>
@@ -292,10 +291,9 @@ export default function TimelinePage() {
               <Image
                 src={selectedPost.image_url}
                 alt={`${selectedPost.profiles?.display_name || "ユーザー"}の投稿`}
+                sizes="33vw"
                 fill
                 className="object-cover"
-                unoptimized
-                loading="eager"
                 quality={75}  // 画質設定
               />
               {/* ダウンロードボタン（crew_id=13のみ表示） */}
