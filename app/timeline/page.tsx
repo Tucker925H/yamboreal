@@ -214,6 +214,7 @@ export default function TimelinePage() {
                   className="object-cover transition-transform hover:scale-105"
                   unoptimized
                   loading="eager"
+                  quality={75}  // 画質設定
                 />
               </button>
             ))}
@@ -295,6 +296,7 @@ export default function TimelinePage() {
                 className="object-cover"
                 unoptimized
                 loading="eager"
+                quality={75}  // 画質設定
               />
               {/* ダウンロードボタン（crew_id=13のみ表示） */}
               {profile?.crew_id === 13 && (
