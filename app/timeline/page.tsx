@@ -287,13 +287,13 @@ export default function TimelinePage() {
             </div>
 
             {/* 画像 */}
-            <div className="relative aspect-[4/5] w-full">
+            <div className="relative w-full">
               <Image
                 src={selectedPost.image_url}
                 alt={`${selectedPost.profiles?.display_name || "ユーザー"}の投稿`}
-                sizes="33vw"
-                fill
-                className="object-cover"
+                width={800} // 画像の基準サイズ（アスペクト比維持のため必要）
+                height={1000}
+                className="h-auto w-full object-inherit" // 自動計算
                 quality={75}  // 画質設定
               />
               {/* ダウンロードボタン（crew_id=13のみ表示） */}
