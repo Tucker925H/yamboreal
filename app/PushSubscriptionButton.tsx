@@ -62,7 +62,7 @@ export default function PushSubscriptionButton() {
         position: "fixed",
         bottom: 40,
         right: 26,
-        zIndex: 0,
+        zIndex: 2,
         padding: "6px 18px",
         background: subscribed ? "#aaa" : "#007aff",
         color: "#fff",

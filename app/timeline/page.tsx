@@ -301,7 +301,7 @@ export default function TimelinePage() {
             {postsByDate.map((group) => (
               <div key={group.date}>
                 {/* 日付区切り */}
-                <div className="sticky top-[49px] z-[5] flex items-center gap-2 bg-background/90 backdrop-blur-sm px-2 py-1.5">
+                <div className="sticky top-[49px] z-[1] flex items-center gap-2 bg-background/90 backdrop-blur-sm px-2 py-1.5">
                   <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{group.label}</span>
                   <div className="flex-1 border-t border-zinc-200 dark:border-zinc-800" />
                 </div>
