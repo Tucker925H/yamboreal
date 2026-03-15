@@ -2,7 +2,7 @@ export type Profile = {
   session_token: string;
   display_name: string;
   crew_id: number;
-  created_at?: string;
+  created_at: string;
 };
 
 export type Crew = {
