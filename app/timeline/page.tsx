@@ -5,6 +5,7 @@ import type { PostWithProfile } from "@/lib/database.types";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import useSWR from "swr";
 import { useAuth } from "../providers";
 
 export default function TimelinePage() {
@@ -48,19 +49,25 @@ export default function TimelinePage() {
       return () => clearInterval(interval);
     }, [pushTimestamp]);
   const { sessionToken, profile, isLoading } = useAuth();
-  const [posts, setPosts] = useState<PostWithProfile[]>([]);
+  
+  // SWRで投稿一覧をキャッシュ (初回取得後はキャッシュを使用)
+  const { data: postsData, mutate: mutatePosts } = useSWR(
+    "posts",
+    async () => {
+      const { data } = await fetchPosts();
+      return data;
+    },
+    {
+      revalidateOnFocus: false,  // フォーカス時に再取得しない
+      revalidateOnReconnect: false,  // 再接続時に再取得しない
+      dedupingInterval: 60000,  // 60秒間は重複リクエストを防止
+    }
+  );
+  const posts = postsData ?? [];
+  
   const [selectedPost, setSelectedPost] = useState<PostWithProfile | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // 投稿一覧を取得
-  useEffect(() => {
-    const loadPosts = async () => {
-      const { data } = await fetchPosts();
-      setPosts(data);
-    };
-    loadPosts();
-  }, []);
 
   // カメラボタンクリック
   const handleCameraClick = () => {
@@ -102,9 +109,8 @@ export default function TimelinePage() {
         return;
       }
 
-      // 投稿一覧を再取得
-      const { data: updatedPosts } = await fetchPosts();
-      setPosts(updatedPosts);
+      // SWRのキャッシュを更新（再取得をトリガー）
+      await mutatePosts();
 
       alert("投稿しました！");
     } catch (err) {
@@ -141,7 +147,7 @@ export default function TimelinePage() {
       {/* ヘッダー */}
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-background/80 backdrop-blur-sm dark:border-zinc-800">
         <div className="absolute top-5 right-6 text-xs text-zinc-500 dark:text-zinc-400 select-none">
-        v1.0.0
+        v1.1.0
       </div>
         <div className="flex items-center justify-center px-4 py-3">
           <h1 className="text-lg font-bold">YamBoReal.</h1>
@@ -204,9 +210,10 @@ export default function TimelinePage() {
                 <Image
                   src={post.image_url}
                   alt={`${post.profiles?.display_name || "ユーザー"}の投稿`}
+                  sizes="33vw"
                   fill
                   className="object-cover transition-transform hover:scale-105"
-                  unoptimized
+                  quality={75}  // 画質設定
                 />
               </button>
             ))}
@@ -280,13 +287,15 @@ export default function TimelinePage() {
             </div>
 
             {/* 画像 */}
-            <div className="relative aspect-[4/5] w-full">
+            <div className="relative w-full">
               <Image
                 src={selectedPost.image_url}
                 alt={`${selectedPost.profiles?.display_name || "ユーザー"}の投稿`}
-                fill
-                className="object-cover"
-                unoptimized
+                width={800} // 画像の基準サイズ（アスペクト比維持のため必要）
+                height={1000}
+                className="h-auto w-full object-inherit" // 自動計算
+                quality={75}  // 画質設定
+                loading="eager"
               />
               {/* ダウンロードボタン（crew_id=13のみ表示） */}
               {profile?.crew_id === 13 && (
