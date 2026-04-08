@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div id="top"></div>
 
-## Getting Started
+# YamBoReal.
 
-First, run the development server:
+イベント参加者向けの BeReal 風写真共有アプリです。Push 通知をきっかけに、通知から 2 分以内にその瞬間を撮影して投稿し、班ごとにリアルなタイムラインを共有します。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## プロジェクトについて
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+YamBoReal. は、第3回 KINKI RS YamBoree の参加者向けに作成した、リアルタイム写真共有アプリです。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+このアプリの中心にあるのは、「今この瞬間を撮る」という体験です。管理者が Push 通知を送ると、参加者はその通知を合図にカメラを起動し、2 分以内に写真を投稿します。投稿はイベントの空気感をそのまま残すための記録として蓄積され、あとから班ごとのタイムラインとして振り返れます。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 主な特徴
 
-## Learn More
+- 表示名と班を使った簡易ログイン
+- Push 通知をきっかけに写真を投稿する体験
+- 通知受信から 2 分間だけ撮影できるタイムリミット
+- 班情報付きのタイムライン表示
+- 日付ごとにまとまった投稿一覧
+- イベント期間で投稿を絞り込める表示
+- 管理者による一斉通知送信
+- PWA 風のホーム画面体験
 
-To learn more about Next.js, take a look at the following resources:
+<br />
+<div align="right">
+	<a href="#top"><strong>トップへ</strong></a>
+</div>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 画面イメージ
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+以下は仮の配置例です。実際の画像がある場合は差し替えてください。
 
-## Deploy on Vercel
+### タイムライン画面
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+<table>
+	<tr>
+		<td width="30%" valign="top">
+			<img src="docs/images/timeline.png" alt="タイムライン画面" width="100%" />
+		</td>
+		<td width="55%" valign="top">
+			<strong>画面の見どころ</strong><br />
+			・日付ごとに投稿がまとまって表示されます。<br />
+			・通知受信後は 2 分間のカウントダウンが表示されます。<br />
+			・班情報付きで投稿が並び、イベントの記録を振り返れます。<br />
+			・イベント単位のフィルタで投稿を絞り込めます。
+		</td>
+	</tr>
+</table>
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| 画面 | 画像パス例 | 説明 |
+| --- | --- | --- |
+| トップ | `/docs/images/home.png` | アプリの入口。ログインとタイムライン閲覧への導線があります。 |
+| ログイン | `/docs/images/login.png` | 表示名と班を入力して簡易ログインします。 |
+| プロフィール設定 | `/docs/images/profile-setup.png` | 初回利用時に名前と班を登録します。 |
+| タイムライン | `/docs/images/timeline.png` | 投稿一覧、イベントフィルタ、カメラ起動、モーダル表示を備えます。 |
+| 管理画面 | `/docs/images/admin.png` | 管理者が全体通知を送るための画面です。 |
+
+<p align="right">(<a href="#top">トップへ</a>)</p>
+
+## どういう流れのアプリか
+
+1. 参加者は表示名と班を登録してログインします。
+2. タイムラインを開くと、通知の購読が行われます。
+3. 管理者が Push 通知を送ると、参加者の端末に通知が届きます。
+4. 通知を受けた参加者は 2 分以内に写真を撮って投稿します。
+5. 投稿は班情報つきでタイムラインに並び、イベントの記録として残ります。
+
+<p align="right">(<a href="#top">トップへ</a>)</p>
+
+## もう少し具体的に
+
+このアプリは、ただ写真を投稿するだけではなく、「通知が来た瞬間の空気」を共有することを目的にしています。通知が来るまで待つ時間、通知が届いてから急いで撮る時間、投稿がタイムラインに並ぶ時間まで含めて、イベントの記録そのものを体験としてデザインしています。
+
+画面の中心になるのはタイムラインです。参加者の写真は班名と一緒に並び、日付ごとに見返しやすく整理されます。イベント単位でのフィルタもあるので、開催中の投稿だけを追うこともできます。
+
+<p align="right">(<a href="#top">トップへ</a>)</p>
