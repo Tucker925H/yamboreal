@@ -1,12 +1,28 @@
 import { supabase } from "@/lib/supabase";
 import type { ProfileWithCrew } from "@/lib/database.types";
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
+function createMockProfile(userId: string): ProfileWithCrew {
+  return {
+    session_token: userId,
+    display_name: "Dev User",
+    crew_id: 1,
+    created_at: new Date().toISOString(),
+    crews: { id: 1, name: "A班" },
+  };
+}
+
 /**
  * ユーザーIDからプロフィールを取得（crew情報含む）
  */
 export async function fetchProfile(
   userId: string
 ): Promise<{ data: any | null; error: Error | null }> {
+  if (isDevelopment) {
+    return { data: createMockProfile(userId), error: null };
+  }
+
   console.log("fetchProfile 呼び出し - userId:", userId);
   
   const { data, error } = await supabase
@@ -27,6 +43,10 @@ export async function fetchProfile(
  * プロフィールが存在するか確認
  */
 export async function checkProfileExists(userId: string): Promise<boolean> {
+  if (isDevelopment) {
+    return true;
+  }
+
   const { data: profiles } = await supabase
     .from("profiles")
     .select("session_token")
@@ -43,6 +63,10 @@ export async function checkProfileExistsWithData(userId: string): Promise<{
   exists: boolean;
   profile: ProfileWithCrew | null;
 }> {
+  if (isDevelopment) {
+    return { exists: true, profile: createMockProfile(userId) };
+  }
+
   const { data, error } = await supabase
     .from("profiles")
     .select(`
@@ -70,6 +94,10 @@ export async function createProfile(params: {
   display_name: string;
   crew_id: number;
 }): Promise<{ success: boolean; error: Error | null }> {
+  if (isDevelopment) {
+    return { success: true, error: null };
+  }
+
   const { error } = await supabase.from("profiles").insert(params);
 
   if (error) {

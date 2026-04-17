@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import type { Post, PostWithProfile } from "@/lib/database.types";
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 /**
  * 画像をSupabase Storageにアップロード
  */
@@ -76,6 +78,10 @@ export async function fetchPosts(): Promise<{
   data: PostWithProfile[];
   error: Error | null;
 }> {
+  if (isDevelopment) {
+    return { data: [], error: null };
+  }
+
   const { data, error } = await supabase
     .from("posts")
     .select(`
