@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { ProfileWithCrew } from "@/lib/database.types";
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -24,7 +24,8 @@ export async function fetchProfile(
   }
 
   console.log("fetchProfile 呼び出し - userId:", userId);
-  
+
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
@@ -47,6 +48,7 @@ export async function checkProfileExists(userId: string): Promise<boolean> {
     return true;
   }
 
+  const supabase = getSupabase();
   const { data: profiles } = await supabase
     .from("profiles")
     .select("session_token")
@@ -67,6 +69,7 @@ export async function checkProfileExistsWithData(userId: string): Promise<{
     return { exists: true, profile: createMockProfile(userId) };
   }
 
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("profiles")
     .select(`
@@ -98,6 +101,7 @@ export async function createProfile(params: {
     return { success: true, error: null };
   }
 
+  const supabase = getSupabase();
   const { error } = await supabase.from("profiles").insert(params);
 
   if (error) {

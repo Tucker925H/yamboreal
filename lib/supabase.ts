@@ -11,7 +11,9 @@ export function getSupabase(): SupabaseClient {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Supabase環境変数が設定されていません！");
+    throw new Error(
+      "Supabase環境変数が設定されていません。NEXT_PUBLIC_SUPABASE_URL と NEXT_PUBLIC_SUPABASE_ANON_KEY を設定してください。"
+    );
   }
 
   supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
@@ -25,5 +27,12 @@ export function getSupabase(): SupabaseClient {
   return supabaseInstance;
 }
 
-// 後方互換性のため
-export const supabase = getSupabase();
+// 後方互換性のためsupabaseという名前でプロキシを設定
+// プロパティアクセス時に初めてgetSupabase()へ転送するように変更. 初期化を遅延
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_target, prop, receiver) {
+    const client = getSupabase();
+    const value = Reflect.get(client as object, prop, receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});

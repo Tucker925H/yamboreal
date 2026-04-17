@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { Crew } from "@/lib/database.types";
 
 const isDevelopment = process.env.NODE_ENV === "development";
@@ -20,6 +20,7 @@ export async function fetchCrews(): Promise<{
   }
 
   try {
+    const supabase = getSupabase();
     const { data, error } = await supabase
       .from("crews")
       .select("*");

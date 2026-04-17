@@ -1,7 +1,7 @@
 "use client";
 
 import { fetchProfile } from "@/lib/api";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { ProfileWithCrew } from "@/lib/database.types";
 import type { User } from "@supabase/supabase-js";
 import {
@@ -53,11 +53,12 @@ export function Providers({ children }: { children: ReactNode }) {
 
     // session_tokenでプロフィール取得
     try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('session_token', userId)
-      .maybeSingle();
+      const supabase = getSupabase();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("session_token", userId)
+        .maybeSingle();
       setProfile(profile || null);
     } catch (e) {
       setProfile(null);
