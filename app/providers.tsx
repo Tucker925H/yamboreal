@@ -1,7 +1,7 @@
 "use client";
 
 import { fetchProfile } from "@/lib/api";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { ProfileWithCrew } from "@/lib/database.types";
 import type { User } from "@supabase/supabase-js";
 import {
@@ -11,6 +11,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+
+const isDevelopment = process.env.NODE_ENV === "development";
 
 type AuthContextType = {
   sessionToken: string | null;
@@ -38,13 +40,25 @@ export function Providers({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadProfile = async (userId: string) => {
+    if (isDevelopment) {
+      setProfile({
+        session_token: userId,
+        display_name: "Dev User",
+        crew_id: 1,
+        created_at: new Date().toISOString(),
+        crews: { id: 1, name: "A班" },
+      });
+      return;
+    }
+
     // session_tokenでプロフィール取得
     try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('session_token', userId)
-      .maybeSingle();
+      const supabase = getSupabase();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("session_token", userId)
+        .maybeSingle();
       setProfile(profile || null);
     } catch (e) {
       setProfile(null);

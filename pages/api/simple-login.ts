@@ -1,15 +1,27 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
   const { display_name, crew_id } = req.body;
   if (!display_name || !crew_id) return res.status(400).json({ error: "display_nameとcrew_idは必須です" });
+
+  if (process.env.NODE_ENV === "development") {
+    return res.status(200).json({
+      session_token: crypto.randomUUID(),
+      user: {
+        id: 0,
+        display_name,
+        crew_id: Number(crew_id),
+        session_token: "dev-session-token",
+      },
+    });
+  }
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   // profiles検索
   let { data: profile } = await supabase

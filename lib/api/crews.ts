@@ -1,5 +1,12 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { Crew } from "@/lib/database.types";
+
+const isDevelopment = process.env.NODE_ENV === "development";
+const mockCrews: Crew[] = [
+  { id: 1, name: "A班" },
+  { id: 2, name: "B班" },
+  { id: 3, name: "C班" },
+];
 
 /**
  * 班一覧を取得
@@ -8,7 +15,12 @@ export async function fetchCrews(): Promise<{
   data: Crew[];
   error: Error | null;
 }> {
+  if (isDevelopment) {
+    return { data: mockCrews, error: null };
+  }
+
   try {
+    const supabase = getSupabase();
     const { data, error } = await supabase
       .from("crews")
       .select("*");

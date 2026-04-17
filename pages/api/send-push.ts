@@ -2,11 +2,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 webpush.setVapidDetails(
   "mailto:admin@yamboreal.com",
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
@@ -18,6 +13,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.headers.authorization !== process.env.ADMIN_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
   }
+
+  if (process.env.NODE_ENV === "development") {
+    return res.status(200).json({ success: true, sent: 0, mocked: true });
+  }
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   const { title, body, url } = req.body;
   // 全購読者取得
   const { data, error } = await supabase.from("push_subscriptions").select("endpoint, p256dh, auth");

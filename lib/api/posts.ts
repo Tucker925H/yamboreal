@@ -1,5 +1,7 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { Post, PostWithProfile } from "@/lib/database.types";
+
+const isDevelopment = process.env.NODE_ENV === "development";
 
 /**
  * 画像をSupabase Storageにアップロード
@@ -9,6 +11,7 @@ export async function uploadImage(
   userId: string
 ): Promise<{ url: string | null; error: Error | null }> {
   try {
+    const supabase = getSupabase();
     // ファイル名を生成（ユーザーID + タイムスタンプ + ランダム + 拡張子）
     const fileExt = file.name.split(".").pop() || "jpg";
     const randomStr = Math.random().toString(36).substring(2, 8);
@@ -53,9 +56,10 @@ export async function createPost(params: {
   session_token: string;
   image_url: string;
 }): Promise<{ data: Post | null; error: Error | null }> {
-   if (!params.session_token || !params.image_url) {
+  if (!params.session_token || !params.image_url) {
     return { data: null, error: new Error("session_tokenとimage_urlは必須です") };
   }
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("posts")
     .insert(params)
@@ -76,6 +80,11 @@ export async function fetchPosts(): Promise<{
   data: PostWithProfile[];
   error: Error | null;
 }> {
+  if (isDevelopment) {
+    return { data: [], error: null };
+  }
+
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("posts")
     .select(`
